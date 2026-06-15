@@ -7,12 +7,12 @@ SOUNDFONT = "/Users/pedronogueira/PUC/micro/Trabalho/GeneralUser-GS/GeneralUser-
 
 BPM             = 120
 BEATS_POR_LOOP  = 4
-PPQ             = 480                       # ticks por beat
-TICKS_POR_LOOP  = PPQ * BEATS_POR_LOOP      # ticks no loop inteiro
+ticks_per_beat             = 480                       # ticks por beat
+TICKS_POR_LOOP  = ticks_per_beat * BEATS_POR_LOOP      # ticks no loop inteiro
 
 # para BPM mutável -> toda conversão tick→ms lê o valor atual.
 def ms_por_beat() -> float:
-    return 60_000 / BPM
+    return 60000 / BPM
 
 # ---------------------------------------------------------------------------
 # Metrônomo (agendado no próprio sequencer)
@@ -81,7 +81,7 @@ def schedule_metronomo(inicio: int, ms_por_tick: float) -> None:
     if not metro_ativo:
         return
     for beat in range(BEATS_POR_LOOP):
-        t = inicio + round(beat * PPQ * ms_por_tick)
+        t = inicio + round(beat * ticks_per_beat * ms_por_tick)
         nota = METRO_NOTA_FORTE if beat == 0 else METRO_NOTA_FRACA
         vel  = METRO_VEL_FORTE if beat == 0 else METRO_VEL_FRACA
         sequencer.note_on(t, CANAL_METRO, nota, vel, dest=synthSeqID)
@@ -94,7 +94,7 @@ def schedule_metronomo(inicio: int, ms_por_tick: float) -> None:
 def tick_relativo_atual() -> int:
     # Onde estamos AGORA dentro do loop, em ticks PPQ (0 … TICKS_POR_LOOP-1).
     ms_rel = sequencer.get_tick() - loop_inicio
-    tick = round(ms_rel / (ms_por_beat() / PPQ))
+    tick = round(ms_rel / (ms_por_beat() / ticks_per_beat))
     return tick % TICKS_POR_LOOP
 
 
@@ -106,7 +106,7 @@ def registrar_evento(tick: int, ev: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# API do engine -> aciona o som e grava no loop.
+# API externa -> aciona o som e grava no loop.
 #
 # É a fronteira de integração -> qualquer fonte de input (teclado hoje; MIDI,
 # rede ou GUI no futuro) só precisa chamar nota_on/nota_off. O engine não
@@ -119,7 +119,7 @@ def nota_on(nota: int, velocity: int = VEL_GRAVACAO, canal: int = CANAL_GUITAR) 
     tick = tick_relativo_atual()
     registrar_evento(tick, {
         "tipo": "on", "canal": canal, "nota": nota,
-        "velocity": velocity, "beat": tick // PPQ + 1,
+        "velocity": velocity, "beat": tick // ticks_per_beat + 1,
     })
     return tick
 
@@ -130,7 +130,7 @@ def nota_off(nota: int, canal: int = CANAL_GUITAR) -> int:
     tick = tick_relativo_atual()
     registrar_evento(tick, {
         "tipo": "off", "canal": canal, "nota": nota,
-        "velocity": 0, "beat": tick // PPQ + 1,
+        "velocity": 0, "beat": tick // ticks_per_beat + 1,
     })
     return tick
 
@@ -148,7 +148,7 @@ def limpar_loop() -> None:
 def set_loop(inicio: int) -> None:
     # Agenda no sequencer os eventos gravados + o metrônomo para este loop.
     # Lê eventos e BPM agora -> o que foi gravado/alterado já vale neste loop.
-    ms_por_tick = ms_por_beat() / PPQ
+    ms_por_tick = ms_por_beat() / ticks_per_beat
 
     # Snapshot sob lock -> a thread do teclado pode estar gravando ao mesmo tempo.
     with eventos_lock:
@@ -238,7 +238,7 @@ def encerrar() -> None:
 
 
 def main() -> None:
-    print(f"BPM={BPM} | {BEATS_POR_LOOP} beats/loop | PPQ={PPQ}")
+    print(f"BPM={BPM} | {BEATS_POR_LOOP} beats/loop | PPQ={ticks_per_beat}")
     print(f"Metrônomo: canal {CANAL_METRO} | ativo={metro_ativo} | volume={metro_volume}")
     print("Guitarra - pentatônica menor de Lá:")
     print("  A=57  S=60  D=62  F=64  G=67")
