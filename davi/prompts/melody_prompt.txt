@@ -1,0 +1,10 @@
+Below is a musical passage in ABC format, generated from a composer's improvisation in a digital keyboard.
+The composer may have made one or more mistakes when playing the keyboard, resulting in a note that doesn't fit the general melody.
+
+Your task is to identify whether or not these notes are present in the passage, and substitute them for the most adequate alternative. 
+Consider the overall melody when making substitutions. 
+For instance, in a more complex melody, it is more difficult to determine whether or not a specific note is a mistake.
+When uncertain about the presence of mistakes, do not make any modifications.
+
+Your only output should be the resulting ABC file, with no extra comments.
+
