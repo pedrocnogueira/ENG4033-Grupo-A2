@@ -1,11 +1,11 @@
-import rhythm
-import melody
+from . import rhythm
+from . import melody
 
-from midi_to_track_list import midi_to_track_list
-from track_to_abc import track_to_abc
-from abc_to_track import abc_to_track
+from .midi_to_track_list import midi_to_track_list
+from .track_to_abc import track_to_abc
+from .abc_to_track import abc_to_track
 
-from model.track import Track
+from ..model.track import Track
 
 
 def perform_music_adjustments(track: Track, quantize: str | int = "AUTO", adjust_melody: bool = True) -> Track:
@@ -25,7 +25,3 @@ def perform_music_adjustments(track: Track, quantize: str | int = "AUTO", adjust
     track = abc_to_track(abc_track, track.PPQ)
     return track
 
-tracks = midi_to_track_list("midi/sample.mid", key="E")
-track = tracks[1]
-adjusted_track = perform_music_adjustments(track, quantize="AUTO", adjust_melody=True)
-print(adjusted_track)

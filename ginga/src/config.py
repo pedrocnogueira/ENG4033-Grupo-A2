@@ -16,7 +16,7 @@ GAIN      = 0.8
 
 # --- Tempo / resolução ---
 BPM_PADRAO     = 120
-BEATS_POR_LOOP = 4
+BEATS_POR_LOOP = 16
 PPQ            = 480      # pulses per quarter note — ticks por beat
 
 # --- Canais MIDI ---
