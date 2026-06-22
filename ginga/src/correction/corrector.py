@@ -24,4 +24,3 @@ def perform_music_adjustments(track: Track, quantize: str | int = "AUTO", adjust
     
     track = abc_to_track(abc_track, track.PPQ)
     return track
-
