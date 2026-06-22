@@ -2,7 +2,7 @@
 
 Organizado em camadas:
   config        — constantes e defaults
-  evento        — Evento (dado puro)
+  Event / Track — dados puros do loop
   sintetizador  — recurso de áudio (FluidSynth + Sequencer)
   metronomo     — agenda os cliques de referência
   looper        — engine: timing, gravação e agendamento do loop

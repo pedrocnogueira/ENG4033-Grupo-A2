@@ -9,6 +9,7 @@ from .sintetizador import Sintetizador
 from .metronomo import Metronomo
 from .looper import Looper
 from .teclado import TecladoInput
+from .Track import Track
 
 
 def main():
@@ -16,7 +17,12 @@ def main():
     sint.selecionar_instrumento(config.CANAL_INSTRUMENTO, config.PRESET_INSTRUMENTO)
 
     metronomo = Metronomo(sint)
-    looper = Looper(sint, metronomo)
+    track = Track(
+        key="default",
+        time_signature=(config.BEATS_POR_LOOP, 4),
+        PPQ=config.PPQ,
+    )
+    looper = Looper(sint, metronomo, track)
 
     print(f"BPM={looper.bpm} | {looper.beats_por_loop} beats/loop | PPQ={config.PPQ}")
     print(f"Metrônomo: canal {metronomo.canal} | ativo={metronomo.ativo}")
