@@ -1,4 +1,4 @@
-import llm
+import ginga.src.correction.llm as llm
 
 from Track import Track
 
