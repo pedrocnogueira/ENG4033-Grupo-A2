@@ -1,5 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, font, filedialog, messagebox
+from serial import Serial, SerialException
+
+try:
+    arduino = Serial("/dev/serial0", baudrate=9600)
+    print("Arduino conectado")
+except SerialException:
+    arduino = None
+    print("Arduino não conectado")
 
 # Cores do projeto:
 azul = "#929EFA"
@@ -52,6 +60,13 @@ gravando = False
 tocando = False
 
 # Funções:
+def lerArduino():
+    if arduino is not None and arduino.in_waiting > 0:
+        texto_recebido = arduino.readline().decode().strip()
+        print(texto_recebido)
+
+    janela.after(50, lerArduino)
+
 def mostrarTela(tela):     # centraliza a tela (frame)
     tela.place(relx=0.5, rely=0.5, anchor="center")
 
@@ -369,6 +384,6 @@ botaoExcluir.pack(side = "left", padx = 15)
 botaoSalvarTrack.pack(side = "left", padx = 15)
 
 
-
+lerArduino()
 # Loop para manter funcionando
 janela.mainloop()
