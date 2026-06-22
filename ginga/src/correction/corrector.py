@@ -24,8 +24,3 @@ def perform_music_adjustments(track: Track, quantize: str | int = "AUTO", adjust
     
     track = abc_to_track(abc_track, track.PPQ)
     return track
-
-tracks = midi_to_track_list("midi/sample.mid", key="E")
-track = tracks[1]
-adjusted_track = perform_music_adjustments(track, quantize="AUTO", adjust_melody=True)
-print(adjusted_track)
