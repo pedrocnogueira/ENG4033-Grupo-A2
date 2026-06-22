@@ -1,0 +1,11 @@
+Below is a simplified track description of a MIDI file. 
+It contains information on the time signature, ticks per quarter note, and a list of events for each tick.
+The events are "note_on" events, each having a duration.
+The track is originated from a performance, meaning it may contain imperfections in rhythm.
+
+Your goal is to suggest a resolution to quantize the track (e. g. 4 for quarter note, 8 for eight note, and so on).
+The suggestion should take into account the overall structure of the track. 
+For example, a more complex rhythm should be quantized with a bigger resolution.
+
+Your output must contain a single number, representing the resolution (1 / 2 / 4 / 8 / 16 / 32 / 64...)
+

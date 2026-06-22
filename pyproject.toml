@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ginga"
+version = "0.1.0"
+description = "Looper/gravador musical com correção automática e UI (ENG4033 - Grupo A2)"
+requires-python = ">=3.12"
+dependencies = [
+    "pyfluidsynth",   # synth: FluidSynth + Sequencer
+    "pynput",         # synth: adaptador de teclado CLI (legado)
+    "pyserial",       # ui: input do Arduino
+    "mido",           # correction: leitura de MIDI
+    "ollama",         # correction: LLM local (gemma3) p/ ritmo AUTO e melodia
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
