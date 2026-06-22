@@ -5,11 +5,11 @@ liga por injeção de dependência. Rode com:  python3 -m Sistema_Som
 """
 
 from . import config
-from .sintetizador import Sintetizador
-from .metronomo import Metronomo
-from .looper import Looper
-from .teclado import TecladoInput
-from .Track import Track
+from .synth.sintetizador import Sintetizador
+from .synth.metronomo import Metronomo
+from .synth.looper import Looper
+from .synth.teclado import TecladoInput
+from .model.track import Track
 
 
 def main():

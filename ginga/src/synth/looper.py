@@ -15,19 +15,21 @@ note_on / note_off no sequencer.
 
 import threading
 
-from . import config
-from .Event import Event
-from .Track import Track
+from .. import config
+from ..model.event import Event
+from ..model.track import Track
 
 
 class Looper:
     def __init__(self, sint, metronomo, track: Track,
-                 bpm=config.BPM_PADRAO, beats_por_loop=config.BEATS_POR_LOOP):
+                 bpm=config.BPM_PADRAO, beats_por_loop=config.BEATS_POR_LOOP,
+                 canal=config.CANAL_INSTRUMENTO):
         self.sint = sint
         self.metronomo = metronomo
         self.track = track
         self.bpm = bpm
         self.beats_por_loop = beats_por_loop
+        self.canal = canal              # canal MIDI desta track (multi-track)
 
         # (channel, note) -> (abs_press_tick, velocity) enquanto a nota está
         # segurada. Guardamos o tick ABSOLUTO do sequencer (não o tick
@@ -35,6 +37,7 @@ class Looper:
         # que cruzam a barra do loop, sem confundir com a virada do
         # _loop_inicio que acontece no callback _on_loop.
         self._pending: dict[tuple[int, int], tuple[int, int]] = {}
+        self._track_anterior: Track | None = None   # estado antes da última troca
         self._lock = threading.Lock()
         self._loop_inicio = 0
         self._client_id = sint.sequencer.register_client("looper", self._on_loop)
@@ -53,9 +56,10 @@ class Looper:
         return beat_ms - (desde_inicio % beat_ms)
 
     # --- API do engine (input-agnóstica) ---
-    def nota_on(self, nota, velocity=config.VEL_PADRAO, canal=config.CANAL_INSTRUMENTO):
+    def nota_on(self, nota, velocity=config.VEL_PADRAO, canal=None):
         # Toca ao vivo (monitoração) e marca a nota como em curso. O Event só
         # é gravado em nota_off, quando já conhecemos a duration.
+        canal = self.canal if canal is None else canal
         self.sint.nota_on(canal, nota, velocity)
         abs_press = self.sint.sequencer.get_tick()
         with self._lock:
@@ -63,7 +67,8 @@ class Looper:
             tick_rel = self._tick_relativo(abs_press)
         return tick_rel
 
-    def nota_off(self, nota, canal=config.CANAL_INSTRUMENTO):
+    def nota_off(self, nota, canal=None):
+        canal = self.canal if canal is None else canal
         self.sint.nota_off(canal, nota)
         abs_off = self.sint.sequencer.get_tick()
         ms_por_tick = self._ms_por_tick()
@@ -86,7 +91,7 @@ class Looper:
             # loop (modulo Python normaliza valores negativos).
             press_tick = self._tick_relativo(abs_press)
 
-            ev = Event(nota, duration, canal, velocity)
+            ev = Event(type="note_on", note=nota, duration=duration, channel=canal, velocity=velocity)
             self.track.events.setdefault(press_tick, []).append(ev)
 
             # Se a virada do loop aconteceu entre o press e o release, o
@@ -113,6 +118,32 @@ class Looper:
             self.track.events.clear()
             self._pending.clear()
 
+    def substituir_track(self, nova: Track):
+        # Troca a track gravada (ex.: pela versão corrigida). A troca é só a
+        # reatribuição da referência sob lock; o loop em execução continua com
+        # o que já foi agendado e o próximo _agendar (na virada do loop) passa
+        # a usar a track nova. _pending é zerado: notas seguradas pertenciam à
+        # gravação anterior. A track de antes fica guardada para restaurar_track.
+        with self._lock:
+            self._track_anterior = self.track
+            self.track = nova
+            self._pending.clear()
+
+    @property
+    def pode_restaurar(self) -> bool:
+        # True se há um estado anterior guardado (útil p/ a UI habilitar o botão).
+        return self._track_anterior is not None
+
+    def restaurar_track(self):
+        # Desfaz a última substituir_track, voltando ao estado anterior. É um
+        # toggle: troca atual <-> anterior, então chamar de novo refaz. No-op se
+        # nunca houve substituição.
+        with self._lock:
+            if self._track_anterior is None:
+                return
+            self.track, self._track_anterior = self._track_anterior, self.track
+            self._pending.clear()
+
     # --- gravação interna ---
     def _tick_atual(self):
         return self._tick_relativo(self.sint.sequencer.get_tick())
@@ -129,8 +160,12 @@ class Looper:
         self._loop_inicio = self.sint.sequencer.get_tick()
         self._agendar(self._loop_inicio)
 
-    def _agendar(self, inicio):
-        ms_por_tick = self._ms_por_tick()
+    def agendar_eventos(self, inicio, ms_por_tick):
+        # Agenda SÓ os eventos desta track no sequencer para o loop que começa
+        # em `inicio`. Não arma timer nem metrônomo: no modo gerenciado quem
+        # rege o clock é o Studio (que chama este método a cada virada).
+        # Atualiza _loop_inicio — a gravação ao vivo se referencia nele.
+        self._loop_inicio = inicio
         seq, synth_id = self.sint.sequencer, self.sint.synth_id
 
         with self._lock:
@@ -143,11 +178,14 @@ class Looper:
                 seq.note_on(t_on, ev.channel, ev.note, ev.velocity, dest=synth_id)
                 seq.note_off(t_off, ev.channel, ev.note, dest=synth_id)
 
+    def _agendar(self, inicio):
+        # Modo standalone (sem Studio): agenda eventos + metrônomo + arma o
+        # próprio timer da virada.
+        ms_por_tick = self._ms_por_tick()
+        self.agendar_eventos(inicio, ms_por_tick)
         self.metronomo.agendar(inicio, ms_por_tick, self.beats_por_loop)
-
         dur_loop_ms = round(self.ticks_por_loop * ms_por_tick)
-        seq.timer(inicio + dur_loop_ms, dest=self._client_id)
+        self.sint.sequencer.timer(inicio + dur_loop_ms, dest=self._client_id)
 
     def _on_loop(self, time, event, seq, data):
-        self._loop_inicio = time
         self._agendar(time)

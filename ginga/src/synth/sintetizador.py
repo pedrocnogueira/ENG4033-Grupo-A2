@@ -6,7 +6,7 @@ Cria e possui o Sequencer, já que os dois são acoplados na prática.
 
 import fluidsynth
 
-from . import config
+from .. import config
 
 
 class Sintetizador:

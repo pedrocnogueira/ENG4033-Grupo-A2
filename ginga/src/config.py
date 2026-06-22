@@ -4,7 +4,13 @@ Aqui ficam só defaults imutáveis. Estado que muda em runtime (BPM atual,
 metrônomo ligado/desligado, volume) vive nas instâncias, não aqui.
 """
 
-SOUNDFONT = '/Users/pedronogueira/PUC/micro/Trabalho/GeneralUser-GS/GeneralUser-GS.sf2'
+from pathlib import Path
+
+# Raiz do projeto (ginga/), resolvida a partir da localização deste arquivo
+# (ginga/src/config.py) — independe do diretório de onde o sistema é executado.
+_RAIZ = Path(__file__).resolve().parent.parent
+
+SOUNDFONT = str(_RAIZ / "assets" / "soundfonts" / "GeneralUser-GS.sf2")
 DRIVER    = "coreaudio"   # macOS; use "alsa" no Linux, "dsound" no Windows
 GAIN      = 0.8
 

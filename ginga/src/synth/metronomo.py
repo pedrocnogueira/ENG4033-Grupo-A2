@@ -4,7 +4,7 @@ Não tem clock próprio: recebe o início e o fator de conversão do loop e
 deposita os cliques no sequencer. Sincronia perfeita com a música, sem drift.
 """
 
-from . import config
+from .. import config
 
 
 class Metronomo:
