@@ -4,7 +4,7 @@ from midi_to_track_list import midi_to_track_list
 from ginga.src.correction.track_to_abc import track_to_abc
 from ginga.src.correction.abc_to_track import abc_to_track
 
-from Track import Track
+from model.track import Track
 
 
 def perform_music_adjustments(track: Track, quantize: str | int = "AUTO", adjust_melody: bool = True) -> Track:

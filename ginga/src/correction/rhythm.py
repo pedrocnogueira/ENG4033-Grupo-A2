@@ -1,7 +1,7 @@
 import ginga.src.correction.llm as llm
 
-from Event import Event
-from Track import Track
+from model.event import Event
+from model.track import Track
 
 
 def suggest_resolution(track: Track) -> int:

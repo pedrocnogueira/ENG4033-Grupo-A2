@@ -1,8 +1,8 @@
 import math
 from fractions import Fraction
 
-from Event import Event
-from Track import Track
+from model.event import Event
+from model.track import Track
 
 
 _PITCH_NAMES = {
