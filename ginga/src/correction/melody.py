@@ -1,6 +1,6 @@
-import ginga.src.correction.llm as llm
+import llm
 
-from Track import Track
+from model.track import Track
 
 def correct_melody(abc: str) -> str:
     full_prompt = ""

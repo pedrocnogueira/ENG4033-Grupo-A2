@@ -1,10 +1,11 @@
-import ginga.src.correction.rhythm as rhythm
-import ginga.src.correction.melody as melody
-from midi_to_track_list import midi_to_track_list
-from ginga.src.correction.track_to_abc import track_to_abc
-from ginga.src.correction.abc_to_track import abc_to_track
+import rhythm
+import melody
 
-from Track import Track
+from midi_to_track_list import midi_to_track_list
+from track_to_abc import track_to_abc
+from abc_to_track import abc_to_track
+
+from model.track import Track
 
 
 def perform_music_adjustments(track: Track, quantize: str | int = "AUTO", adjust_melody: bool = True) -> Track:
