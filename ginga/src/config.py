@@ -8,9 +8,9 @@ from pathlib import Path
 
 # Raiz do projeto (ginga/), resolvida a partir da localização deste arquivo
 # (ginga/src/config.py) — independe do diretório de onde o sistema é executado.
-_RAIZ = Path(__file__).resolve().parent.parent
+RAIZ = Path(__file__).resolve().parent.parent
 
-SOUNDFONT = str(_RAIZ / "assets" / "soundfonts" / "GeneralUser-GS.sf2")
+SOUNDFONT = str(RAIZ / "assets" / "soundfonts" / "GeneralUser-GS.sf2")
 DRIVER    = "coreaudio"   # macOS; use "alsa" no Linux, "dsound" no Windows
 GAIN      = 0.8
 

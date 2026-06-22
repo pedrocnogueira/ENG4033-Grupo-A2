@@ -2,11 +2,12 @@ from . import llm
 
 from ..model.event import Event
 from ..model.track import Track
+from ..config import RAIZ
 
 
 def suggest_resolution(track: Track) -> int:
     full_prompt = ""
-    with open("prompts/rhythm_prompt.txt", 'r') as prompt_file:
+    with open(str(RAIZ / "assets" / "prompts" / "rhythm_prompt.txt"), 'r') as prompt_file:
         full_prompt += prompt_file.read()
     full_prompt += track.__str__()
     response = llm.send_message(full_prompt)
