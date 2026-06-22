@@ -1,8 +1,15 @@
-"""TecladoInput — adaptador de input por teclado.
+"""TecladoInput — adaptador de input por teclado (CLI, via pynput).
 
-Única parte do sistema que conhece o pynput. Traduz tecla -> nota e delega
-ao Looper. Para trocar a fonte de input no futuro, escreve-se outro adaptador
-com a mesma ideia (chamar looper.nota_on / nota_off) e o engine não muda.
+Única parte do sistema que conhece o pynput. Traduz tecla -> nota e delega ao
+Studio. É a fonte de input legada da CLI; na GUI quem captura tecla é o Tk
+(ui/inputs/keyboard.py). Mantido aqui para testar a integração sem UI.
+
+Teclas:
+  A S D F G  -> notas (pentatônica menor de Lá)
+  C          -> corrigir a track (módulo de correção)
+  R          -> restaurar a track ao estado anterior à correção
+  BACKSPACE  -> limpa a track
+  ESC        -> sai
 """
 
 from pynput import keyboard
@@ -18,8 +25,9 @@ class TecladoInput:
         'g': 67,  # G4
     }
 
-    def __init__(self, looper):
-        self.looper = looper
+    def __init__(self, studio, track_i=0):
+        self.studio = studio
+        self.track_i = track_i
         self._ativas = set()   # debounce: evita retrigger enquanto a tecla segue pressionada
 
     def _on_press(self, key):
@@ -29,14 +37,22 @@ class TecladoInput:
             if key == keyboard.Key.esc:
                 return False            # encerra o listener
             if key == keyboard.Key.backspace:
-                self.looper.limpar()
-                print("  loop limpo")
+                self.studio.limpar_track(self.track_i)
+                print("  track limpa")
             return
 
         if char in self.MAPA and char not in self._ativas:
             self._ativas.add(char)
-            tick = self.looper.nota_on(self.MAPA[char])
-            print(f"[{char.upper()}] nota {self.MAPA[char]} ON  @tick {tick}")
+            self.studio.nota_on(self.track_i, self.MAPA[char])
+            print(f"[{char.upper()}] nota {self.MAPA[char]} ON")
+        elif char == 'c' and 'c' not in self._ativas:
+            self._ativas.add('c')
+            self.studio.corrigir_track(self.track_i)
+            print("  >> track corrigida (R restaura)")
+        elif char == 'r' and 'r' not in self._ativas:
+            self._ativas.add('r')
+            self.studio.restaurar_track(self.track_i)
+            print("  >> track restaurada")
 
     def _on_release(self, key):
         try:
@@ -46,7 +62,9 @@ class TecladoInput:
 
         if char in self.MAPA and char in self._ativas:
             self._ativas.discard(char)
-            self.looper.nota_off(self.MAPA[char])
+            self.studio.nota_off(self.track_i, self.MAPA[char])
+        elif char in ('c', 'r'):
+            self._ativas.discard(char)
 
     def executar(self):
         # Bloqueia até o usuário apertar ESC.

@@ -1,6 +1,6 @@
-import llm
+from . import llm
 
-from model.track import Track
+from ..model.track import Track
 
 def correct_melody(abc: str) -> str:
     full_prompt = ""

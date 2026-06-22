@@ -1,8 +1,8 @@
 import re
 from fractions import Fraction
 
-from model.event import Event
-from model.track import Track
+from ..model.event import Event
+from ..model.track import Track
 
 
 _NOTE_TO_SEMITONE = {

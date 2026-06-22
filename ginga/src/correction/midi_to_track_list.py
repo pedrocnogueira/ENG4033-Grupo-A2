@@ -1,8 +1,8 @@
 import mido
 from collections import defaultdict
 
-from model.event import Event
-from model.track import Track
+from ..model.event import Event
+from ..model.track import Track
 
 def midi_to_track_list(input_path: str, key: str = "C") -> list[Track]:
     midi = mido.MidiFile(input_path)

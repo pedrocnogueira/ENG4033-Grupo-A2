@@ -27,7 +27,7 @@ class Metronomo:
         seq, synth_id = self.sint.sequencer, self.sint.synth_id
         for beat in range(beats_por_loop):
             t = inicio + round(beat * config.PPQ * ms_por_tick)
-            forte = beat == 0
+            forte = beat in [0, 4, 8, 12]
             nota = config.METRO_NOTA_FORTE if forte else config.METRO_NOTA_FRACA
             vel  = config.METRO_VEL_FORTE if forte else config.METRO_VEL_FRACA
             seq.note_on(t, self.canal, nota, vel, dest=synth_id)
