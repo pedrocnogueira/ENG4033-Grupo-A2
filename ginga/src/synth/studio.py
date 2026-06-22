@@ -32,9 +32,10 @@ class Studio:
         self._client_id = sint.sequencer.register_client("studio", self._on_loop)
 
     # --- gestão de tracks ---
-    def adicionar_track(self, instrumento, canal, key="C") -> int:
-        # `instrumento` = preset General MIDI; `canal` = canal MIDI da track.
-        self._sint.selecionar_instrumento(canal, instrumento)
+    def adicionar_track(self, instrumento, canal, key="C", banco=0) -> int:
+        # `instrumento` = preset General MIDI; `canal` = canal MIDI da track;
+        # `banco` = bank do soundfont (use 128 p/ kits de percussão na bateria).
+        self._sint.selecionar_instrumento(canal, instrumento, banco)
         track = Track(key=key, time_signature=(self._beats_por_loop, 4),
                       PPQ=config.PPQ, events={})
         looper = Looper(self._sint, self._metronomo, track,
