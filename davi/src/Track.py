@@ -16,7 +16,7 @@ class Track:
     PPQ: int # ticks per quarter note
     events: dict[int, list[Event]]
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = f"Track: {self.key}\n"
         s += f"Time signature: {self.time_signature[0]}/{self.time_signature[1]}\n"
         s += f"Ticks per quarter note: {self.PPQ}\n"
