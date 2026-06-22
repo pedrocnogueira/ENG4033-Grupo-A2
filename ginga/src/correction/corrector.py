@@ -1,8 +1,9 @@
-import ginga.src.correction.rhythm as rhythm
-import ginga.src.correction.melody as melody
+import rhythm
+import melody
+
 from midi_to_track_list import midi_to_track_list
-from ginga.src.correction.track_to_abc import track_to_abc
-from ginga.src.correction.abc_to_track import abc_to_track
+from track_to_abc import track_to_abc
+from abc_to_track import abc_to_track
 
 from model.track import Track
 
