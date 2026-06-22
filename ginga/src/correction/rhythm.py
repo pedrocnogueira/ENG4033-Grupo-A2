@@ -1,4 +1,5 @@
 from . import llm
+import re
 
 from ..model.event import Event
 from ..model.track import Track
@@ -11,7 +12,11 @@ def suggest_resolution(track: Track) -> int:
         full_prompt += prompt_file.read()
     full_prompt += track.__str__()
     response = llm.send_message(full_prompt)
-    return int(response)
+    
+    match = re.search(r'\d+', response)
+
+    resolution = int(match.group()) if match else 64    
+    return resolution
 
 
 def quantize(track: Track, resolution: int = 4) -> Track:
