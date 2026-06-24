@@ -3,7 +3,7 @@ from tkinter import ttk, font, filedialog, messagebox
 from serial import Serial, SerialException
 
 try:
-    arduino = Serial("/dev/serial0", baudrate=9600)
+    arduino = Serial("/dev/serial0", baudrate = 9600, timeout = 0.1)       # Confirmar qual é a porta correta
     print("Arduino conectado")
 except SerialException:
     arduino = None
@@ -29,6 +29,9 @@ frameEditor = tk.Frame(janela, bg = branco)
 
 # Teclas que podem ser apertadas
 listaTeclas = ["a", "s", "d", "f", "g"]
+
+# Mapear o comando recebido do Arduino para as teclas 
+mapaBotoes = {"1": "a", "2": "s", "3": "d", "4": "f", "5": "g"}
 
 # Guarda um dicionario para cada track
 listaTracks = []
@@ -60,27 +63,61 @@ gravando = False
 tocando = False
 
 # Funções:
+
+# Comunicação com Arduino
 def lerArduino():
     if arduino is not None and arduino.in_waiting > 0:
-        texto_recebido = arduino.readline().decode().strip()
-        print(texto_recebido)
-
+        texto_recebido = arduino.readline().decode(errors="ignore").strip()
+        print("Texto recebido do Arduino: ",texto_recebido)     # imprime o texto logo que ele é recebido
+        processarArduino(texto_recebido)
     janela.after(50, lerArduino)
 
+
+def processarArduino(texto):
+    texto = texto.lower().strip()       # texto fica todo em letras minusculas
+    print("Processando texto recebido do Arduino: ", texto)
+
+    partes = texto.split()      # pega cada parte do texto recebido pelo Arduino (separa por espaço)
+    
+    if len(partes) < 3:
+        return      # considerando que o texto recebido deve ser do tipo "botao x ação" (ação = pressionado ou solto)
+
+    if partes[0] not in ["botao", "botão"]:     # funciona se botão estiver com ou sem acento
+        return
+    
+    numeroBotao = partes[1]
+    acao = partes[2]
+
+    if numeroBotao not in mapaBotoes:
+        return
+    
+    tecla = mapaBotoes[numeroBotao]     # pega a tecla equivalente
+
+    if acao == "pressionado":
+        pressionarTecla(tecla)
+    elif acao == "solto":
+        soltarTecla(tecla)
+
+
+# UI
 def mostrarTela(tela):     # centraliza a tela (frame)
     tela.place(relx=0.5, rely=0.5, anchor="center")
+
 
 def abrirConfig():
     frameInicial.place_forget()
     mostrarTela(frameConfig)
 
+
 def voltarInicio():
     frameConfig.place_forget()
     mostrarTela(frameInicial)
 
+
 def voltarConfig():
     frameTracks.place_forget()
     mostrarTela(frameConfig)
+
 
 def salvarConfig():
     nota = entradaNota.get()
@@ -95,6 +132,7 @@ def salvarConfig():
     frameConfig.place_forget()
     mostrarTela(frameTracks)
 
+
 def salvarInstrumento(numero):
     instrumento = entradaInstrumento.get()
     (listaTracks[numero])["instrumento"] = instrumento
@@ -102,10 +140,12 @@ def salvarInstrumento(numero):
     print(listaTracks)
     frameInstrumento.place_forget()
     mostrarTela(frameEditor)
-    
+
+
 def voltarTracks():
     frameInstrumento.place_forget()
     mostrarTela(frameTracks)
+
 
 def salvarTrack():
     global trackAtual
@@ -118,46 +158,78 @@ def salvarTrack():
             if resposta:
                 (listaTracks[trackAtual])["salvo"] = True
 
+
 def cancelarTrack():
+    resposta = True
+
     if (listaTracks[trackAtual])["salvo"] == False:
         resposta = messagebox.askyesno("Seu progresso não foi salvo", "Tem certeza que deseja voltar e perder seu progresso desse track?")
+    
     if resposta:
         frameEditor.place_forget()
         mostrarTela(frameTracks)
         janela.unbind("<KeyPress>")
         janela.unbind("<KeyRelease>")
 
+
 def destacar(event):
     event.widget.config(bd = 3, bg = "#EEF1FF")
+
 
 def normal(event):
     event.widget.config(bd = 1, bg = "white")
 
+
 def destacarAdicionar(event):
     event.widget.config(bd = 1, bg = "#EEF1FF", fg = "black")
 
+
 def normalAdicionar(event):
     event.widget.config(bd = 1, bg = azul, fg = "white")
-    
+
+
 def posicoesEditor(lista_y):
     for i in range(len(lista_y)-1):
         posicoesTeclas[listaTeclas[i]] = {"y1":lista_y[i], "y2":lista_y[i+1]}
 
-def teclaPressionada(event):
-    tecla = event.keysym
+
+def pressionarTecla(tecla):     
+    # não depende de apertar um botão do teclado do computador, 
+    # pode ser aproveitado pros botoes do Arduino
+    
     print(tecla)
+    
+    if tecla not in listaTeclas:
+        return
+
     if teclasAtivas[tecla] != None:
         return
-    y1 = (posicoesTeclas[tecla])["y1"]
+    
+    y1 = (posicoesTeclas[tecla])["y1"]      # y1 e y2 guardam as coordenadas do retangulo que vai aparecer no editor
     y2 = (posicoesTeclas[tecla])["y2"]
+
     retangulo = canvasMusica.create_rectangle(cursorX, y1, cursorX, y2, fill = azul, outline = "")
     retangulos.append(retangulo)
     teclasAtivas[tecla] = retangulo
     canvasMusica.tag_lower(retangulo)
 
-def teclaSolta(event):
-    tecla = event.keysym
+
+def soltarTecla(tecla):
+    # não depende de apertar um botão do teclado do computador, 
+    # pode ser aproveitado pros botoes do Arduino
+
+    if tecla not in listaTeclas:
+        return 
     teclasAtivas[tecla] = None
+
+
+def teclaPressionada(event):
+    pressionarTecla(event.keysym)
+
+
+def teclaSolta(event):
+    soltarTecla(event.keysym)
+
 
 def abrirTrack(numero):
     global trackAtual
@@ -198,6 +270,7 @@ def criarTrack(numero, tipo):
     
     listaTracks.append(track)
     
+
 def atualizarTempo():
     global cursorX, tocando
     if not tocando:
@@ -207,8 +280,7 @@ def atualizarTempo():
     
     global gravando
     gravando = True
-    
-    
+        
     if cursorX > 650:
         gravando = False
         tocando = False
@@ -224,10 +296,12 @@ def atualizarTempo():
                 canvasMusica.coords(retangulo, coords[0], coords[1], cursorX, coords[3])    # Mantém as coordenadas iguais o retangulo original, aumentando só para a direita de acordo com cursor X
                 canvasMusica.tag_lower(retangulo)
 
+
 def iniciar():
     global tocando
     tocando = True
     atualizarTempo()
+
 
 def excluir():
     global cursorX
@@ -246,10 +320,12 @@ def excluir():
         if voltar:
             iniciar()
 
+
 def pausar():
     global tocando
     tocando = False
     
+
 def playPause():
     if tocando:
         pausar()
@@ -383,6 +459,9 @@ botaoGravar.pack(side = "left", padx = 15)
 botaoExcluir.pack(side = "left", padx = 15)
 botaoSalvarTrack.pack(side = "left", padx = 15)
 
+
+processarArduino("botao 1 pressionado")
+processarArduino("botao 1 solto")
 
 lerArduino()
 # Loop para manter funcionando
