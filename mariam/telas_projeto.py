@@ -151,15 +151,18 @@ def run():
 
 
     def salvarTrack():
-        nonlocal trackAtual
-        if not gravando:
-            if retangulos == []:
-                messagebox.showerror("Track vazio", "Você não tem nada para salvar.")
-            else:
-                pergunta = "Salvar track %d?" %(trackAtual+1)
-                resposta = messagebox.askyesno("Salvar", pergunta)
-                if resposta:
-                    (listaTracks[trackAtual])["salvo"] = True
+        if gravando:
+            print("Botão salvar apertado mas ignorado: gravação em andamento")
+            return
+        
+        if retangulos == []:
+            messagebox.showerror("Track vazio", "Você não tem nada para salvar.")
+            return
+        
+        pergunta = "Salvar track %d?" %(trackAtual+1)
+        resposta = messagebox.askyesno("Salvar", pergunta)
+        if resposta:
+            (listaTracks[trackAtual])["salvo"] = True
 
 
     def cancelarTrack():
