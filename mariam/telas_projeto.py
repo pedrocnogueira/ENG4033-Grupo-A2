@@ -82,25 +82,34 @@ def run():
 
         partes = texto.split()      # pega cada parte do texto recebido pelo Arduino (separa por espaço)
         
-        if len(partes) < 3:
-            return      # considerando que o texto recebido deve ser do tipo "botao x ação" (ação = pressionado ou solto)
+        if len(partes) == 3:      # considerando que o texto recebido deve ser do tipo "botao x ação" (ação = pressionado ou solto) ou "
 
-        if partes[0] not in ["botao", "botão"]:     # funciona se botão estiver com ou sem acento
-            return
+            if partes[0] not in ["botao", "botão"]:     # funciona se botão estiver com ou sem acento
+                return
+            
+            numeroBotao = partes[1]
+            acao = partes[2]
+
+            if numeroBotao not in mapaBotoes:
+                return
+            
+            tecla = mapaBotoes[numeroBotao]     # pega a tecla equivalente
+
+            if acao == "pressionado":
+                pressionarTecla(tecla)
+            elif acao == "solto":
+                soltarTecla(tecla)
+                
+        elif len(partes) == 1:
+            if partes[0] == "aumentou":
+                alterarBPM(1)
+            elif partes[0] == "abaixou":
+                alterarBPM(-1)
+            else:
+                return
         
-        numeroBotao = partes[1]
-        acao = partes[2]
-
-        if numeroBotao not in mapaBotoes:
+        else:
             return
-        
-        tecla = mapaBotoes[numeroBotao]     # pega a tecla equivalente
-
-        if acao == "pressionado":
-            pressionarTecla(tecla)
-        elif acao == "solto":
-            soltarTecla(tecla)
-
 
     # UI
     def mostrarTela(tela):     # centraliza a tela (frame)
@@ -135,6 +144,17 @@ def run():
         frameConfig.place_forget()
         mostrarTela(frameTracks)
 
+    def alterarBPM(delta):
+        bpmAtual = configProjeto["bpm"]
+        
+        novoBPM = bpmAtual + delta
+        novoBPM = max(40, min(250, novoBPM))     # garante que o valor de bpm ainda está dentro do intervalo permitido
+        
+        configProjeto["bpm"] = novoBPM
+        configProjeto["tempo"] = 960 / novoBPM
+        
+        print("Novo BPM: ", novoBPM)
+        
 
     def salvarInstrumento(numero):
         instrumento = entradaInstrumento.get()
