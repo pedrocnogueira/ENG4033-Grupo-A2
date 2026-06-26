@@ -36,7 +36,7 @@ class Studio:
         # `instrumento` = preset General MIDI; `canal` = canal MIDI da track;
         # `banco` = bank do soundfont (use 128 p/ kits de percussão na bateria).
         self._sint.selecionar_instrumento(canal, instrumento, banco)
-        track = Track(key=key, time_signature=(self._beats_por_loop, 4),
+        track = Track(key=key, time_signature=(4, 4),
                       PPQ=config.PPQ, events={})
         looper = Looper(self._sint, self._metronomo, track,
                         bpm=self._bpm, beats_por_loop=self._beats_por_loop,

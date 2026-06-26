@@ -3,7 +3,7 @@ import re
 
 from ..model.event import Event
 from ..model.track import Track
-from ..config import RAIZ
+from ..config import RAIZ, DEFAULT_RESOLUTION
 
 
 def suggest_resolution(track: Track) -> int:
@@ -15,7 +15,7 @@ def suggest_resolution(track: Track) -> int:
     
     match = re.search(r'\d+', response)
 
-    resolution = int(match.group()) if match else 64    
+    resolution = int(match.group()) if match else DEFAULT_RESOLUTION 
     return resolution
 
 

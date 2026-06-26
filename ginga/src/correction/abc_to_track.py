@@ -3,7 +3,7 @@ from fractions import Fraction
 
 from ..model.event import Event
 from ..model.track import Track
-
+from ..config import VEL_PADRAO
 
 _NOTE_TO_SEMITONE = {
     "C": 0,
@@ -117,7 +117,7 @@ def abc_to_track(abc: str, PPQ: int = 480) -> Track:
                             type="note_on",
                             note=note,
                             duration=pending_duration,
-                            velocity=80
+                            velocity=VEL_PADRAO
                         )
                         for note in pending_note
                     )

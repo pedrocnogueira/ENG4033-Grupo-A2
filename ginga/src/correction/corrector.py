@@ -6,10 +6,10 @@ from .track_to_abc import track_to_abc
 from .abc_to_track import abc_to_track
 
 from ..model.track import Track
-
+from ..config import DEFAULT_RESOLUTION
 
 def perform_music_adjustments(track: Track, quantize: str | int = "AUTO", adjust_melody: bool = True) -> Track:
-    resolution = 64
+    resolution = DEFAULT_RESOLUTION
     if quantize == "AUTO":
         resolution = rhythm.suggest_resolution(track)
     elif type(quantize) == int:
@@ -18,7 +18,7 @@ def perform_music_adjustments(track: Track, quantize: str | int = "AUTO", adjust
     track = rhythm.quantize(track, resolution=resolution)
     
     abc_track = track_to_abc(track, unit_note_length=resolution)
-
+    
     if adjust_melody:
         abc_track = melody.correct_melody(abc_track)
     
