@@ -85,6 +85,9 @@ def run():
     indiceInstrumentoAtual = 0
     indiceTrackSelecionada = 0
     framesTracks = []
+    
+    # Mudança da cor no editor de acordo com o sensor de distância
+    corNotaAtual = azul
 
     # =========================
     # Comunicação com Arduino
@@ -118,6 +121,10 @@ def run():
 
         if texto == "longe":
             corNotaAtual = corBend
+            return
+
+        if texto in ["longe", "perto"]:
+            processarDistancia(texto)
             return
 
         partes = texto.split()
@@ -244,6 +251,26 @@ def run():
         elif comando == "avancou":
             salvarInstrumento()
 
+    def corPorDistancia(infoSensor):
+        if infoSensor == ("longe"):
+            return "#ff8fa3"
+        # if distancia < 10:
+        #     return "#FF8FA3"   # bem perto
+        # elif distancia < 20:
+        #     return "#FFD166"   # perto/médio
+        # elif distancia < 30:
+        #     return "#8EE6A8"   # médio
+        elif infoSensor == ("perto"):
+            return azul        # longe/normal
+        else:
+            return
+
+    def processarDistancia(infoSensor):
+        nonlocal corNotaAtual
+
+        distancia = infoSensor
+        corNotaAtual = corPorDistancia(distancia)
+        print("Distância:", distancia, "Cor atual:", corNotaAtual)
 
 
     # =========================
@@ -701,7 +728,7 @@ def run():
     criarTrack(1, "percussao")
     criarTrack(2, "melodia")
     criarTrack(3, "melodia")
-    
+
     atualizarSelecaoTrack()
 
     labelAdicionar.bind("<Enter>", destacarAdicionar)
@@ -870,14 +897,15 @@ def run():
     botaoExcluir.pack(side="left", padx=15)
     botaoSalvarTrack.pack(side="left", padx=15)
 
-    # Para simulações com o teclado do computador (sem necessidade de arduino):
+    # Testar sem arduino (com as teclas do computador)
+    # Encoder:
     janela.bind("<Right>", simularEncoderAumentou)
     janela.bind("<Left>", simularEncoderAbaixou)
     janela.bind("<Return>", simularEncoderAvancou)
 
+    # Sensor de distância:
     janela.bind("p", simularDistanciaPerto)
-    janela.bind("l", simularDistanciaLonge) 
-
+    janela.bind("l", simularDistanciaLonge)
 
     lerArduino()
 
